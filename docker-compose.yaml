@@ -1,0 +1,36 @@
+# asbitech.eu — werk-replica (lift-and-shift van Combell → Coolify)
+# Content (wp-content, uploads) + DB worden NA deploy in de volumes geseed
+# vanuit hermes:~/work/clients/asbitech (nooit in git). Zie deploy/SEED-RUNBOOK.md.
+services:
+  wordpress:
+    image: wordpress:7.1-php8.3-apache
+    restart: unless-stopped
+    environment:
+      # Coolify wijst hiermee het domein + Traefik/LE toe:
+      - SERVICE_FQDN_WORDPRESS_80=/
+      # Alleen gebruikt als er (nog) geen wp-config.php in het volume staat;
+      # bij seeding zetten we de echte wp-config met deze db-service als host.
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_TABLE_PREFIX=yrue49hf_
+    volumes:
+      - wp-html:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=${WORDPRESS_DB_NAME}
+      - MYSQL_USER=${WORDPRESS_DB_USER}
+      - MYSQL_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  wp-html:
+  db-data:

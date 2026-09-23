@@ -1,0 +1,8 @@
+# nooit content/secrets in deze infra-repo
+files/
+wp-content/uploads/
+*.sql
+*.sql.gz
+wp-config.php
+coolify-creds.txt
+.env
